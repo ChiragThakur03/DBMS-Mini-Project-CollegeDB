@@ -1,0 +1,151 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: departments
+    // Fields:
+    //   - name: string (required, 1-100 chars)
+    //   - headInstructorId: string (optional) - ID of the instructor who is head
+    //
+    // Collection: instructors
+    // Fields:
+    //   - name: string (required, 1-100 chars)
+    //   - email: string (required, valid email)
+    //   - departmentId: string (required) - ID of the department
+    //
+    // Collection: courses
+    // Fields:
+    //   - name: string (required, 1-100 chars)
+    //   - departmentId: string (required)
+    //   - instructorId: string (required)
+    //
+    // Collection: students
+    // Fields:
+    //   - name: string (required, 1-100 chars)
+    //   - email: string (required, valid email)
+    //
+    // Collection: enrollments
+    // Fields:
+    //   - studentId: string (required)
+    //   - courseId: string (required)
+    //   - enrolledAt: timestamp (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return true; // Authentication removed as per user request
+    }
+
+    function isAdmin() {
+      return true; // Admin checks removed as per user request
+    }
+
+    function hasRequiredFields(fields) {
+      return request.resource.data.keys().hasAll(fields);
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    function isValidString(field, min, max) {
+      return request.resource.data[field] is string &&
+             request.resource.data[field].size() >= min &&
+             request.resource.data[field].size() <= max;
+    }
+
+    function isValidEmail(email) {
+      return email is string &&
+             email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidDepartment() {
+      return hasRequiredFields(['name']) &&
+             hasOnlyAllowedFields(['name', 'headInstructorId']) &&
+             isValidString('name', 1, 100) &&
+             (!('headInstructorId' in request.resource.data) || request.resource.data.headInstructorId is string);
+    }
+
+    function isValidInstructor() {
+      return hasRequiredFields(['name', 'email', 'departmentId']) &&
+             hasOnlyAllowedFields(['name', 'email', 'departmentId']) &&
+             isValidString('name', 1, 100) &&
+             isValidEmail(request.resource.data.email) &&
+             request.resource.data.departmentId is string;
+    }
+
+    function isValidCourse() {
+      return hasRequiredFields(['name', 'departmentId', 'instructorId']) &&
+             hasOnlyAllowedFields(['name', 'departmentId', 'instructorId']) &&
+             isValidString('name', 1, 100) &&
+             request.resource.data.departmentId is string &&
+             request.resource.data.instructorId is string;
+    }
+
+    function isValidStudent() {
+      return hasRequiredFields(['name', 'email']) &&
+             hasOnlyAllowedFields(['name', 'email']) &&
+             isValidString('name', 1, 100) &&
+             isValidEmail(request.resource.data.email);
+    }
+
+    function isValidEnrollment() {
+      return hasRequiredFields(['studentId', 'courseId', 'enrolledAt']) &&
+             hasOnlyAllowedFields(['studentId', 'courseId', 'enrolledAt']) &&
+             request.resource.data.studentId is string &&
+             request.resource.data.courseId is string &&
+             request.resource.data.enrolledAt is timestamp;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /departments/{id} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAdmin() && isValidDepartment();
+      allow delete: if isAdmin();
+    }
+
+    match /instructors/{id} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAdmin() && isValidInstructor();
+      allow delete: if isAdmin();
+    }
+
+    match /courses/{id} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAdmin() && isValidCourse();
+      allow delete: if isAdmin();
+    }
+
+    match /students/{id} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAdmin() && isValidStudent();
+      allow delete: if isAdmin();
+    }
+
+    match /enrollments/{id} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAdmin() && isValidEnrollment();
+      allow delete: if isAdmin();
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

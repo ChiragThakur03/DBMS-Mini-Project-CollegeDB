@@ -1,0 +1,79 @@
+{
+  "entities": {
+    "Department": {
+      "title": "Department",
+      "description": "A college department",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Name of the department" },
+        "headInstructorId": { "type": "string", "description": "ID of the instructor who is the head of the department" }
+      },
+      "required": ["name"]
+    },
+    "Instructor": {
+      "title": "Instructor",
+      "description": "A college instructor",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Name of the instructor" },
+        "email": { "type": "string", "format": "email", "description": "Email of the instructor" },
+        "departmentId": { "type": "string", "description": "ID of the department the instructor works in" }
+      },
+      "required": ["name", "email", "departmentId"]
+    },
+    "Course": {
+      "title": "Course",
+      "description": "A course offered by a department",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Name of the course" },
+        "departmentId": { "type": "string", "description": "ID of the department offering the course" },
+        "instructorId": { "type": "string", "description": "ID of the instructor teaching the course" }
+      },
+      "required": ["name", "departmentId", "instructorId"]
+    },
+    "Student": {
+      "title": "Student",
+      "description": "A student enrolled in the college",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Name of the student" },
+        "email": { "type": "string", "format": "email", "description": "Email of the student" }
+      },
+      "required": ["name", "email"]
+    },
+    "Enrollment": {
+      "title": "Enrollment",
+      "description": "A student's enrollment in a course",
+      "type": "object",
+      "properties": {
+        "studentId": { "type": "string", "description": "ID of the student" },
+        "courseId": { "type": "string", "description": "ID of the course" },
+        "enrolledAt": { "type": "string", "format": "date-time", "description": "Timestamp of enrollment" }
+      },
+      "required": ["studentId", "courseId", "enrolledAt"]
+    }
+  },
+  "firestore": {
+    "/departments/{departmentId}": {
+      "schema": "Department",
+      "description": "Collection of departments"
+    },
+    "/instructors/{instructorId}": {
+      "schema": "Instructor",
+      "description": "Collection of instructors"
+    },
+    "/courses/{courseId}": {
+      "schema": "Course",
+      "description": "Collection of courses"
+    },
+    "/students/{studentId}": {
+      "schema": "Student",
+      "description": "Collection of students"
+    },
+    "/enrollments/{enrollmentId}": {
+      "schema": "Enrollment",
+      "description": "Collection of enrollments"
+    }
+  }
+}
