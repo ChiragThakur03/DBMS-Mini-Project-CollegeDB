@@ -170,9 +170,7 @@ VITE_FIREBASE_STORAGE_BUCKET=your_firebase_storage_bucket
 VITE_FIREBASE_MESSAGING_SENDER_ID=your_firebase_messaging_sender_id
 VITE_FIREBASE_APP_ID=your_firebase_app_id
 
-# Google Generative AI
-GEMINI_API_KEY=your_gemini_api_key
-```
+
 
 ## 🔑 Firebase Configuration
 
